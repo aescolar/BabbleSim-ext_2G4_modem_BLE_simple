@@ -1,5 +1,6 @@
 /*
  * Copyright 2018 Oticon A/S
+ * Copyright 2025 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -53,6 +54,19 @@ static const double channel_filter_Prop2[81] = {
 };
 static const uint channel_filter_BW_Prop2 = 40; //How many samples from the center frequency
 
+static const double channel_filter_HDT[49] = {
+    1.1115e-06, 1.7616e-06,  2.7919e-06, 4.4249e-06, 7.0130e-06, 1.1115e-05, 1.7616e-05, 2.7919e-05,
+    4.4249e-05, 7.0130e-05,  1.1115e-04, 1.3993e-04, 1.7616e-04, 2.2177e-04, 2.7919e-04, 7.0130e-04,
+    1.1115e-03, 1.7616e-03,  1.6066e-01, 5.5069e-01, 9.4603e-01, 1.1115e+00, 1.1115e+00, 1.1115e+00,
+    1.1115e+00, 1.1115e+00,  1.1115e+00, 1.1115e+00, 9.4603e-01, 5.5069e-01, 1.6066e-01, 1.7616e-03,
+    1.1115e-03, 7.0130e-04,  2.7919e-04, 2.2177e-04, 1.7616e-04, 1.3993e-04, 1.1115e-04, 7.0130e-05,
+    4.4249e-05, 2.7919e-05,  1.7616e-05, 1.1115e-05, 7.0130e-06, 4.4249e-06, 2.7919e-06, 1.7616e-06,
+    1.1115e-06,
+};
+
+static const uint channel_filter_BW_HDT = 24; //How many samples from the center frequency
+
+
 //_Power_ spectral density of each modulation (in natural units, power (sum must be 1.0))
 static const double TxSpectrum_BLE[13] = {
     4.1980e-05,   2.8516e-04,   4.8379e-04,   1.2872e-02,   9.1159e-02,
@@ -67,6 +81,13 @@ static const double TxSpectrum_Prop2[25] =
     8.0105e-02,   4.1335e-02,   1.4459e-02,   3.3251e-03,   3.2762e-04,
     1.2972e-04,   2.1890e-04,   1.5134e-04,   5.6012e-05,   1.4055e-05};
 static const uint TxSpecBW_Prop2 = 12;
+
+static const double TxSpectrum_HDT[21] =
+{   1.5876e-06, 3.9879e-06, 7.9569e-06, 1.9987e-05, 1.4479e-02, 4.9630e-02, 8.5259e-02,
+    1.0017e-01, 1.0017e-01, 1.0017e-01, 1.0017e-01, 1.0017e-01, 1.0017e-01, 1.0017e-01,
+    8.5259e-02, 4.9630e-02, 1.4479e-02, 1.9987e-05, 7.9569e-06, 3.9879e-06, 1.5876e-06,
+};
+static const uint TxSpecBW_HDT = 21;
 
 static const double TxSpectrum_WLAN[123] = {
     1.511874e-006 ,3.797656e-006 ,9.539280e-006 ,1.511874e-005 ,2.396159e-005 ,
@@ -236,6 +257,7 @@ static const uint TxSpecBW_WN80MHz = 200;
  * in the demodulator input for that given modulation.
  */
 static double noiseBW_from_modulation(uint modulation_type) {
+  modulation_type &= P2G4_MOD_SIMILAR_MASK;
   switch (modulation_type) {
     case P2G4_MOD_BLE:
     case P2G4_MOD_BLE_CODED:
@@ -244,6 +266,7 @@ static double noiseBW_from_modulation(uint modulation_type) {
       break;
     case P2G4_MOD_BLE2M:
     case P2G4_MOD_PROP2M:
+    case P2G4_MOD_BLE_HDT:
       return 2.5e6;
       break;
     default:
@@ -257,7 +280,7 @@ static double noiseBW_from_modulation(uint modulation_type) {
 
 static void RxFilter_from_modulation(uint modulation_type, const double ** filter_attenuation,
                                      uint *filter_half_BW) {
-
+  modulation_type &= P2G4_MOD_SIMILAR_MASK;
   switch (modulation_type) {
     case P2G4_MOD_BLE:
     case P2G4_MOD_BLE_CODED:
@@ -270,6 +293,10 @@ static void RxFilter_from_modulation(uint modulation_type, const double ** filte
       *filter_attenuation = channel_filter_Prop2;
       *filter_half_BW     = channel_filter_BW_Prop2;
       break;
+    case P2G4_MOD_BLE_HDT:
+      *filter_attenuation = channel_filter_HDT;
+      *filter_half_BW     = channel_filter_BW_HDT;
+      break;
     default:
       bs_trace_error_line("modem BLE Simple does not support receiving "
                           "configured with this modulation type (%i)\n",
@@ -280,7 +307,7 @@ static void RxFilter_from_modulation(uint modulation_type, const double ** filte
 
 static void spectrum_from_modulation(uint modulation_type, const double **tx_spectrum,
                                      uint *tx_spec_halfBW) {
-
+  modulation_type &= P2G4_MOD_SIMILAR_MASK;
   switch (modulation_type) {
     case P2G4_MOD_BLE :
     case P2G4_MOD_BLE_CODED:
@@ -292,6 +319,10 @@ static void spectrum_from_modulation(uint modulation_type, const double **tx_spe
     case P2G4_MOD_PROP2M:
       *tx_spectrum    = TxSpectrum_Prop2;
       *tx_spec_halfBW = TxSpecBW_Prop2;
+      break;
+    case P2G4_MOD_BLE_HDT:
+      *tx_spectrum    = TxSpectrum_HDT;
+      *tx_spec_halfBW = TxSpecBW_HDT;
       break;
     case P2G4_MOD_PROP4M :
       *tx_spectrum    = TxSpectrum_WN4MHz;
