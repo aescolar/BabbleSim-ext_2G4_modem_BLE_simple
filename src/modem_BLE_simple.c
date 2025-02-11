@@ -536,15 +536,47 @@ void modem_analog_rx(void *this, p2G4_radioparamsv2_t *rx_radioparams, double *O
 uint32_t modem_digital_perf_ber(void *this, p2G4_modemdigparams_t *rx_modem_params, double SNR) {
   m_simple_status_t *mo_st = (m_simple_status_t *)this;
 
-  double coding_gain = 0;
+/*
+ * The coding_compression parameter is an "empirically" guessed value which tries to fit the fact that
+ * coding makes the BER curve steeper, and does so more the higher the convolutional code constraint length.
+ * Therefore coding_compression scales the ("x axis" == SNR) by that factor.
+ * The coding_gain parameter accounts for both the actual coding gain, and the ratio of
+ * Energy per bit and Energy per symbol (i.e. converting SNR to Eb/No), but should also discount for
+ * the effect the coding_compression has on bringing the curve closer to 0dB SNR
+ */
+  double coding_gain = 0; /* in dB, coding gain and Es/Eb ratio */
+  double coding_compression = 1.0;
 
   if (rx_modem_params->modulation == P2G4_MOD_BLE_CODED) {
-    //By now let's just offset the curve by 4 and 9dB respectively
-    //It is not too accurate, but much better than nothing
-    if (rx_modem_params->coding_rate == 2) { //S=2
-      coding_gain = 4;
+    coding_compression = 2;
+    if (rx_modem_params->coding_rate == P2G4_CODRATE_BLE_S2) {
+      coding_gain = 0;
     } else { //S=8
-      coding_gain = 9;
+      coding_gain = 4.5;
+    }
+  } else if (rx_modem_params->modulation == P2G4_MOD_BLE_HDT) {
+    coding_compression = 3.2;
+    switch (rx_modem_params->coding_rate) {
+    case P2G4_CODRATE_BLE_HDT2:
+      coding_gain = 3;
+      break;
+    case P2G4_CODRATE_BLE_HDT3:
+      coding_gain = 0.5;
+      break;
+    case P2G4_CODRATE_BLE_HDT4:
+      coding_gain = -2.4;
+      break;
+    case P2G4_CODRATE_BLE_HDT6:
+      coding_gain = -6;
+      break;
+    case P2G4_CODRATE_BLE_HDT7_5:
+      coding_gain = -9.6;
+      break;
+    default:
+      break;
+    }
+    if (rx_modem_params->coding_rate == P2G4_CODRATE_BLE_HDT2) {
+
     }
   }
 
@@ -563,7 +595,7 @@ uint32_t modem_digital_perf_ber(void *this, p2G4_modemdigparams_t *rx_modem_para
   double SNR_nu = 1.0/N_u_o; //back to SNR (in natural units)
   //SNR = 10.0*log10(1.0/N_u_o);
 
-  double BER = Q_function(sqrt(SNR_nu)); //BER from [0..1.0]
+  double BER = Q_function(pow(sqrt(SNR_nu),coding_compression)); //BER from [0..1.0]
   //BER = Q_function(pow(10.0,SNR/20));
 
   return BER*RAND_PROB_1 + 0.5; //scaled to 32bits and rounded to nearest int.

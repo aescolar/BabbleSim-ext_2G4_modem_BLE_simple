@@ -65,9 +65,11 @@ int main(int argc, char**argv){
 
   desired_tx_nbr = 2;
   Tx_List_container.used[2] = 1;
-  RxRadioParams.modulation = P2G4_MOD_BLE;
-  rx_modem_params.modulation = P2G4_MOD_BLE;
   RxRadioParams.center_freq = p2G4_freq2_from_d(2450);
+
+  RxRadioParams.modulation = P2G4_MOD_BLE_HDT;
+  rx_modem_params.modulation = P2G4_MOD_BLE_HDT;
+  rx_modem_params.coding_rate = P2G4_CODRATE_BLE_HDT7_5;
 
   for ( double level = -110; level < -60; level += 0.2 ) {
     double OutputSNR;
