@@ -24,7 +24,7 @@ int main(int argc, char**argv){
   double BER;
 
   void* ModemObj;
-  p2G4_radioparams_t RxRadioParams;
+  p2G4_radioparamsv2_t RxRadioParams;
 
   ModemObj = modem_init(argc-1, &argv[1], 0, 1);
 
@@ -54,7 +54,7 @@ int main(int argc, char**argv){
   double *RxPowers;
   tx_l_c_t Tx_List_container;
   uint desired_tx_nbr;
-  p2G4_radioparams_t RxRadioParams;
+  p2G4_radioparamsv2_t RxRadioParams;
   p2G4_modemdigparams_t rx_modem_params;
 
   ModemObj = modem_init(argc-1, &argv[1], device_nbr, nbr_devices);
@@ -67,7 +67,7 @@ int main(int argc, char**argv){
   Tx_List_container.used[2] = 1;
   RxRadioParams.modulation = P2G4_MOD_BLE;
   rx_modem_params.modulation = P2G4_MOD_BLE;
-  p2G4_freq_from_d( 2450, 0, &RxRadioParams.center_freq );
+  RxRadioParams.center_freq = p2G4_freq2_from_d(2450);
 
   for ( double level = -110; level < -60; level += 0.2 ) {
     double OutputSNR;

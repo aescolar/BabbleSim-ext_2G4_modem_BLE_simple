@@ -31,7 +31,7 @@ int main(int argc, char**argv){
   double RxPowers[Ndevices];
   tx_l_c_t Tx_List_container;
   uint desired_tx_nbr;
-  p2G4_radioparams_t RxRadioParams;
+  p2G4_radioparamsv2_t RxRadioParams;
 
   Tx_List_container.tx_list = calloc(sizeof(tx_el_t), Ndevices);
   Tx_List_container.used = calloc(sizeof(uint), Ndevices);
@@ -52,36 +52,35 @@ int main(int argc, char**argv){
   desired_tx_nbr = 2;
   Tx_List_container.used[2] = 1;
   RxRadioParams.modulation = P2G4_MOD_BLE2M;
-  p2G4_freq_from_d( 2450, 0, &RxRadioParams.center_freq );
+  RxRadioParams.center_freq = p2G4_freq2_from_d(2450);
 
 
   Tx_List_container.tx_list[1].tx_s.radio_params.modulation = P2G4_MOD_BLE;
-  p2G4_freq_from_d( 2448e6, 0, &Tx_List_container.tx_list[1].tx_s.radio_params.center_freq );
+  Tx_List_container.tx_list[1].tx_s.radio_params.center_freq = p2G4_freq2_from_d(2448);
   Tx_List_container.used[1] = 1;
 
   Tx_List_container.tx_list[3].tx_s.radio_params.modulation = P2G4_MOD_WHITENOISE1MHz;
-  p2G4_freq_from_d( 2446e6, 0, &Tx_List_container.tx_list[3].tx_s.radio_params.center_freq );
+  Tx_List_container.tx_list[3].tx_s.radio_params.center_freq = p2G4_freq2_from_d(2446);
   Tx_List_container.used[3] = 1;
 
   Tx_List_container.tx_list[4].tx_s.radio_params.modulation = P2G4_MOD_CWINTER;
-  p2G4_freq_from_d( 2446e6, 0, &Tx_List_container.tx_list[4].tx_s.radio_params.center_freq );
+  Tx_List_container.tx_list[4].tx_s.radio_params.center_freq = p2G4_freq2_from_d(2446);
   Tx_List_container.used[4] = 1;
 
   Tx_List_container.tx_list[5].tx_s.radio_params.modulation = P2G4_MOD_WHITENOISE4MHz;
-  p2G4_freq_from_d( 2449e6, 0, &Tx_List_container.tx_list[5].tx_s.radio_params.center_freq );
+  Tx_List_container.tx_list[5].tx_s.radio_params.center_freq = p2G4_freq2_from_d(2449);
   Tx_List_container.used[5] = 1;
 
   Tx_List_container.tx_list[7].tx_s.radio_params.modulation = P2G4_MOD_WHITENOISE2MHz;
-  p2G4_freq_from_d( 2451e6, 0, &Tx_List_container.tx_list[7].tx_s.radio_params.center_freq );
+  Tx_List_container.tx_list[7].tx_s.radio_params.center_freq = p2G4_freq2_from_d(2451);
   Tx_List_container.used[7] = 1;
 
   Tx_List_container.tx_list[9].tx_s.radio_params.modulation = P2G4_MOD_PROP4M; //should not contribute at all
-  p2G4_freq_from_d( 2448e6, 0, &Tx_List_container.tx_list[9].tx_s.radio_params.center_freq );
+  Tx_List_container.tx_list[9].tx_s.radio_params.center_freq = p2G4_freq2_from_d( 2448e6);
   Tx_List_container.used[9] = 1;
 
-
   Tx_List_container.tx_list[10].tx_s.radio_params.modulation = P2G4_MOD_PROP2M; //should not contribute at all
-  p2G4_freq_from_d( 2448e6, 0, &Tx_List_container.tx_list[10].tx_s.radio_params.center_freq );
+  Tx_List_container.tx_list[10].tx_s.radio_params.center_freq = p2G4_freq2_from_d(2448);
   Tx_List_container.used[10] = 1;
 
   double OutputSNR;

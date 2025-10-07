@@ -409,7 +409,7 @@ void* modem_init(int argc, char *argv[], uint d, uint n_devs) {
  *  OutputSNR               : SNR in the analog output / digital input of this modem (dB)
  *  Output_RSSI_power_level : RSSI level (analog, dBm) sent to the modem digital
  */
-void modem_analog_rx(void *this, p2G4_radioparams_t *rx_radioparams, double *OutputSNR,
+void modem_analog_rx(void *this, p2G4_radioparamsv2_t *rx_radioparams, double *OutputSNR,
                      double *Output_RSSI_power_level, double *rx_powers, tx_l_c_t *txl_c,
                      uint desired_tx_nbr) {
   m_simple_status_t *mo_st = (m_simple_status_t *)this;
@@ -434,7 +434,7 @@ void modem_analog_rx(void *this, p2G4_radioparams_t *rx_radioparams, double *Out
     //The "Rx filter" shall include all effects which would increase
     //the noise/interference power at a given frequency offset
 
-    int CenterR = p2G4_freq_to_d(rx_radioparams->center_freq) / (FreqRes/1e6); //Center frequency (where 0 = 2400MHz)
+    int CenterR = p2G4_freq2_to_d(rx_radioparams->center_freq)/ (FreqRes/1e6);
     int StartR  = CenterR - RxFilterHalfBW;
     int EndR    = CenterR + RxFilterHalfBW;
 
@@ -447,7 +447,7 @@ void modem_analog_rx(void *this, p2G4_radioparams_t *rx_radioparams, double *Out
 
         spectrum_from_modulation(txl_c->tx_list[i].tx_s.radio_params.modulation, &TxSpectrum, &TxSpecHalfBW);
 
-        int CenterI = p2G4_freq_to_d(txl_c->tx_list[i].tx_s.radio_params.center_freq) / (FreqRes/1e6); //Center frequency (where 0 = 2400MHz)
+        int CenterI = p2G4_freq2_to_d(txl_c->tx_list[i].tx_s.radio_params.center_freq) / (FreqRes/1e6);
         int StartI  = CenterI - TxSpecHalfBW;
         int EndI    = CenterI + TxSpecHalfBW;
 
@@ -552,7 +552,7 @@ uint32_t modem_digital_perf_ber(void *this, p2G4_modemdigparams_t *rx_modem_para
  *  tx_s           : Parameters of the transmission we are receiving (in case the sync. probability depends on any of them)
  */
 uint32_t modem_digital_perf_sync(void *this, p2G4_modemdigparams_t *rx_modem_params,
-                                 double SNR, p2G4_txv2_t* tx_s) {
+                                 double SNR, p2G4_tx2v1_t* tx_s) {
   m_simple_status_t *mo_st = (m_simple_status_t *)this;
   mo_simple_args_t *args = &mo_st->args;
 
@@ -571,7 +571,7 @@ uint32_t modem_digital_perf_sync(void *this, p2G4_modemdigparams_t *rx_modem_par
  * outputs:
  *  RSSI  : RSSI "digital" value returned by this modem, following the p2G4_rssi_power_t format (16.16 signed value)
  */
-void modem_digital_RSSI(void *this, p2G4_radioparams_t *rx_radioparams,
+void modem_digital_RSSI(void *this, p2G4_radioparamsv2_t *rx_radioparams,
                         double RSSI_power_level, p2G4_rssi_power_t* RSSI) {
 
   m_simple_status_t *mo_st = (m_simple_status_t *)this;
